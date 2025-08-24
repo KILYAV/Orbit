@@ -21,6 +21,6 @@ Celestial::Celestial(const std::vector<std::string>& words, int& index) :
 {}
 BitMap Celestial::GetBitMap(const Gif& gif) {
 	const unsigned size{ static_cast<unsigned>(radius / gif.scale) + 1 };
-	BitMap quad{ nullptr, { size, size } };
+	BitMap quad{ nullptr, glm::uvec2{ size, size } };
 	return quad;
 }

@@ -1,4 +1,5 @@
 #include <memory>
+#include <cstring>
 #include <iostream>
 #include "glm.hpp"
 
@@ -19,42 +20,42 @@ namespace bitmap {
 	};
 	template<typename Pixel>
 	class BitMap :
-		std::unique_ptr<Pixel>
+		std::unique_ptr<Pixel[]>
 	{
 	private:
-		glm::ivec2 size;
+		glm::uvec2 size;
 		unsigned height;
 	public:
-		using std::unique_ptr<Pixel[]>::empty;
+		//using std::unique_ptr<Pixel[]>::empty;
 
 		BitMap() = default;
 		BitMap(BitMap&& bitmap);
 		BitMap(const BitMap& bitmap);
-		BitMap(const Pixel* data, const glm::ivec2 size);
-		BitMap(const Pixel pixel, const glm::ivec2 size);
+		BitMap(const Pixel* data, const glm::uvec2 size);
+		BitMap(const Pixel pixel, const glm::uvec2 size);
 		void operator= (const BitMap& other);
 
-		BitMap& SetSize(const glm::ivec2 size);
-		BitMap& SetPixel(const glm::ivec2 pos, const Pixel pixel);
-		BitMap& Insert(const BitMap& other, const glm::ivec2 pos);
+		BitMap& SetSize(const glm::uvec2 size);
+		BitMap& SetPixel(const glm::uvec2 pos, const Pixel pixel);
+		BitMap& Insert(const BitMap& other, const glm::uvec2 pos);
 		BitMap& Fill(const Pixel pixel);
 		BitMap& Border(const Pixel pixel);
 		BitMap& MirrorXX();
 		const BitMap& Print() const;
 
-		Pixel GetPixel(const glm::ivec2 pos) const;
+		Pixel GetPixel(const glm::uvec2 pos) const;
 
 		const unsigned char* Data() const;
-		glm::ivec2 GetSize() const {
+		glm::uvec2 GetSize() const {
 			return size;
 		}
 	private:
-		std::vector<vector> Data(const Pixel* data, const glm::ivec2 size);
-		std::vector<vector> Data(const Pixel pixel, const glm::ivec2 size);
+		std::unique_ptr<Pixel[]> Data(const Pixel* data, const glm::uvec2 size);
+		std::unique_ptr<Pixel[]> Data(const Pixel pixel, const glm::uvec2 size);
 	};
 	template<typename Pixel>
-	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const Pixel* data, const glm::ivec2 size) {
-		int count = size.x * size.y;
+	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const Pixel* data, const glm::uvec2 size) {
+		unsigned count = size.x * size.y;
 		if (count) {
 			Pixel* bitmap{ new Pixel[count]{ Pixel{} } };
 			if (data) 
@@ -64,9 +65,9 @@ namespace bitmap {
 		else
 			return std::unique_ptr<Pixel[]>{};
 	}
-	template<typename<Pixel>
-	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const Pixel pixel, const glm::ivec2 size) {
-		int count = size.x * size.y;
+	template<typename Pixel>
+	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const Pixel pixel, const glm::uvec2 size) {
+		unsigned count = size.x * size.y;
 		if (count)
 			return std::unique_ptr<Pixel[]>{ new Pixel[count]{ pixel }};
 		else
@@ -86,7 +87,7 @@ namespace bitmap {
 		BitMap{ bitmap.get(), bitmap.size }
 	{}
 	template<typename Pixel>
-	BitMap<Pixel>::BitMap(const Pixel* data, const glm::ivec2 size, const Pixel pixel) :
+	BitMap<Pixel>::BitMap(const Pixel* data, const glm::uvec2 size) :
 		std::unique_ptr<Pixel[]>{ Data(data,size) },
 		size{ size }
 	{}
@@ -96,20 +97,20 @@ namespace bitmap {
 		size = other.size;
 	}
 	template<typename Pixel>
-	BitMap<Pixel>& BitMap<Pixel>::SetSize(const glm::ivec2 new_size) {
+	BitMap<Pixel>& BitMap<Pixel>::SetSize(const glm::uvec2 new_size) {
 		static_cast<std::unique_ptr<Pixel[]>&>(*this) = Data(nullptr, new_size);
 		size = new_size;
 		return *this;
 	}
 	template<typename Pixel>
-	BitMap<Pixel>& BitMap<Pixel>::SetPixel(const glm::ivec2 pos, const Pixel pixel) {
+	BitMap<Pixel>& BitMap<Pixel>::SetPixel(const glm::uvec2 pos, const Pixel pixel) {
 		if (0 <= pos.x || pos.x < size.x || 0 <= pos.y || pos.y < size.y) {
 			this->get()[pos.x + pos.y * size.x] = pixel;
 		}
 		return *this;
 	}
 	template<typename Pixel>
-	BitMap<Pixel>& BitMap<Pixel>::Insert(const BitMap& other, const glm::ivec2 pos) {
+	BitMap<Pixel>& BitMap<Pixel>::Insert(const BitMap& other, const glm::uvec2 pos) {
 		for (unsigned y = 0; y < other.GetSize().y; ++y) {
 			for (unsigned x = 0; x < other.GetSize().x; ++x) {
 				this->SetPixel({ pos.x + x,pos.y + y }, other.GetPixel({ x,y }));
@@ -166,7 +167,7 @@ namespace bitmap {
 		return *this;
 	}
 	template<typename Pixel>
-	Pixel BitMap<Pixel>::GetPixel(const glm::ivec2 pos) const {
+	Pixel BitMap<Pixel>::GetPixel(const glm::uvec2 pos) const {
 		if (0 <= pos.x || pos.x < size.x || 0 <= pos.y || pos.y < size.y)
 			return this->get()[pos.x + pos.y * size.x];
 	}
