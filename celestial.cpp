@@ -19,6 +19,11 @@ Celestial::Celestial(const std::vector<std::string>& words, int& index) :
 		return celestial;
 	})}
 {}
+void Celestial::Print() {
+	std::cout
+		<< "Name - " << name << "\n"
+		<< "Radius - " << radius << "\n";
+}
 BitMap Celestial::GetBitMap(const Gif& gif) {
 	const unsigned size{ static_cast<unsigned>(radius / gif.scale) + 1 };
 	BitMap quad{ nullptr, glm::uvec2{ size, size } };
