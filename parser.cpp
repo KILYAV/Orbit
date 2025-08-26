@@ -29,7 +29,13 @@ Gif::Gif(const std::vector<std::string>& words, int& index) :
 		return gif;
 	})}
 {}
-const std::tuple<Gif, Celestial> Parser(int argc, char** argv) {
+void Gif::Print() {
+	std::cout
+		<< "border - " << border << "\n"
+		<< "delay - " << delay << "\n"
+		<< "scale - " << scale << "\n";
+}
+const std::tuple<Gif, Celestial, Orbit> Parser(int argc, char** argv) {
 	const auto words{ std::invoke([&]() {
 		std::vector<std::string> words;
 		for (int index = 1; index < argc; ++index) {
@@ -38,7 +44,8 @@ const std::tuple<Gif, Celestial> Parser(int argc, char** argv) {
 		return std::move(words);
 	})};
 	Gif gif;
-	Celestial celestial; 
+	Celestial celestial;
+	Orbit orbit;
 	for (int index = 0; index < words.size();) {
 		auto& key{ words[index] };
 		if ("-h" == key)
@@ -52,5 +59,5 @@ const std::tuple<Gif, Celestial> Parser(int argc, char** argv) {
 			break;
 		}
 	}
-	return { gif, celestial };
+	return { gif, celestial, orbit };
 }
