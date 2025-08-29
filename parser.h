@@ -7,11 +7,12 @@
 #include <functional>
 #include "bitmap.h"
 
+constexpr double qDNAN{ std::numeric_limits<double>::quiet_NaN() };
 using BitMap = bitmap::BitMap<bitmap::RGBA>;
 struct Gif {
 	unsigned border{ 5 };	// default size of border;
 	unsigned delay{ 100 };	// delay between of frame
-	unsigned scale{ 100 };	// km in pixel
+	double scale{ qDNAN };	// km in pixel
 	Gif() = default;
 	Gif(const Gif&) = default;
 	Gif(const std::vector<std::string>& words, int& index);
@@ -19,7 +20,7 @@ struct Gif {
 };
 struct Celestial {
 	std::string name;
-	float radius{ std::numeric_limits<float>::quiet_NaN() };
+	double radius{ qDNAN };
 	Celestial() = default;
 	Celestial(const Celestial&) = default;
 	Celestial(const std::vector<std::string>& words, int& index);

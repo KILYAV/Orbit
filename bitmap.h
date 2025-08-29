@@ -4,18 +4,19 @@
 #include "glm.hpp"
 
 namespace bitmap {
-		struct RED {
+	struct RED
+	{
 		unsigned char r = -1;
 	};
-		struct RGB {
-		unsigned char r = -1;
+	struct RGB :
+		RED
+	{
 		unsigned char g = -1;
 		unsigned char b = -1;
 	};
-	struct RGBA {
-		unsigned char r = -1;
-		unsigned char g = -1;
-		unsigned char b = -1;
+	struct RGBA :
+		RGB
+	{
 		unsigned char a = -1;
 	};
 	template<typename Pixel>
@@ -31,8 +32,8 @@ namespace bitmap {
 		BitMap() = default;
 		BitMap(BitMap&& bitmap);
 		BitMap(const BitMap& bitmap);
-		BitMap(const Pixel* data, const glm::uvec2 size);
-		BitMap(const Pixel pixel, const glm::uvec2 size);
+		BitMap(const glm::uvec2 size, const Pixel* data);
+		BitMap(const glm::uvec2 size, const Pixel pixel);
 		void operator= (const BitMap& other);
 
 		BitMap& SetSize(const glm::uvec2 size);
@@ -41,6 +42,8 @@ namespace bitmap {
 		BitMap& Fill(const Pixel pixel);
 		BitMap& Border(const Pixel pixel);
 		BitMap& MirrorXX();
+		BitMap& MirrorUp();
+		BitMap& MirrorLeft();
 		const BitMap& Print() const;
 
 		Pixel GetPixel(const glm::uvec2 pos) const;
@@ -50,14 +53,14 @@ namespace bitmap {
 			return size;
 		}
 	private:
-		std::unique_ptr<Pixel[]> Data(const Pixel* data, const glm::uvec2 size);
-		std::unique_ptr<Pixel[]> Data(const Pixel pixel, const glm::uvec2 size);
+		std::unique_ptr<Pixel[]> Data(const glm::uvec2 size, const Pixel* data);
+		std::unique_ptr<Pixel[]> Data(const glm::uvec2 size, const Pixel pixel);
 	};
 	template<typename Pixel>
-	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const Pixel* data, const glm::uvec2 size) {
+	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const glm::uvec2 size, const Pixel* data) {
 		unsigned count = size.x * size.y;
 		if (count) {
-			Pixel* bitmap{ new Pixel[count]{ Pixel{} } };
+			Pixel* bitmap{ new Pixel[count]{} };
 			if (data) 
 				std::memcpy(bitmap, data, count * sizeof(Pixel));
 			return std::unique_ptr<Pixel[]>{ bitmap };
@@ -66,10 +69,14 @@ namespace bitmap {
 			return std::unique_ptr<Pixel[]>{};
 	}
 	template<typename Pixel>
-	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const Pixel pixel, const glm::uvec2 size) {
+	std::unique_ptr<Pixel[]> BitMap<Pixel>::Data(const glm::uvec2 size, const Pixel pixel) {
 		unsigned count = size.x * size.y;
-		if (count)
-			return std::unique_ptr<Pixel[]>{ new Pixel[count]{ pixel }};
+		if (count) {
+			Pixel* bitmap{ new Pixel[count]{} };
+			for (unsigned index = 0; index < count; ++index)
+				bitmap[index] = pixel;
+			return std::unique_ptr<Pixel[]>{ bitmap };
+		}
 		else
 			return std::unique_ptr<Pixel[]>{};
 	}
@@ -87,8 +94,13 @@ namespace bitmap {
 		BitMap{ bitmap.get(), bitmap.size }
 	{}
 	template<typename Pixel>
-	BitMap<Pixel>::BitMap(const Pixel* data, const glm::uvec2 size) :
-		std::unique_ptr<Pixel[]>{ Data(data,size) },
+	BitMap<Pixel>::BitMap(const glm::uvec2 size, const Pixel* data) :
+		std::unique_ptr<Pixel[]>{ Data(size,data) },
+		size{ size }
+	{}
+	template<typename Pixel>
+	BitMap<Pixel>::BitMap(const glm::uvec2 size, const Pixel pixel) :
+		std::unique_ptr<Pixel[]>{ Data(size,pixel) },
 		size{ size }
 	{}
 	template<typename Pixel>
@@ -136,6 +148,42 @@ namespace bitmap {
 				this->get()[x + d * size.x] = this->get()[x + s * size.x];
 				this->get()[x + s * size.x] = temp;
 			}
+		}
+		return *this;
+	}
+	template<typename Pixel>
+	BitMap<Pixel>& BitMap<Pixel>::MirrorUp() {
+		const unsigned column{ size.y << 1 };
+		const unsigned count{ size.x * column };
+		if (count) {
+			std::unique_ptr<Pixel[]> bitmap{ new Pixel[count]{} };
+			for (unsigned y = 0; y < size.y; ++y) {
+				for (unsigned x = 0; x < size.x; ++x) {
+					Pixel pixel{ static_cast<std::unique_ptr<Pixel[]>&>(*this).get()[size.x * y + x] };
+					bitmap.get()[size.x * (size.y - y - 1) + x] = pixel;
+					bitmap.get()[size.x * (size.y + y + 0) + x] = pixel;
+				}
+			}
+			static_cast<std::unique_ptr<Pixel[]>&>(*this) = std::move(bitmap);
+			size.y <<= 1;
+		}
+		return *this;
+	}
+	template<typename Pixel>
+	BitMap<Pixel>& BitMap<Pixel>::MirrorLeft() {
+		const unsigned row{ size.x << 1 };
+		const unsigned count{ row * size.y };
+		if (count) {
+			std::unique_ptr<Pixel[]> bitmap{ new Pixel[count]{} };
+			for (unsigned y = 0; y < size.y; ++y) {
+				for (unsigned x = 0; x < size.x; ++x) {
+					Pixel pixel{ static_cast<std::unique_ptr<Pixel[]>&>(*this).get()[size.x * y + x] };
+					bitmap.get()[row * y + size.x - x - 1] = pixel;
+					bitmap.get()[row * y + size.x + x + 0] = pixel;
+				}
+			}
+			static_cast<std::unique_ptr<Pixel[]>&>(*this) = std::move(bitmap);
+			size.x <<= 1;
 		}
 		return *this;
 	}

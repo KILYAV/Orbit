@@ -21,8 +21,12 @@ Gif::Gif(const std::vector<std::string>& words, int& index) :
 				gif.border = std::stoi(words[++index]);
 			else if ("-d" == key)
 				gif.delay = std::stoi(words[++index]);
-			else if ("-s" == key)
-				gif.scale = std::stoi(words[++index]);
+			else if ("-s" == key) {
+				if (gif.scale != gif.scale)
+					gif.scale = std::stod(words[++index]);
+				else
+					throw std::invalid_argument{ "Redefinition scale gif" };
+				}
 			else
 				break;
 		}
@@ -31,6 +35,7 @@ Gif::Gif(const std::vector<std::string>& words, int& index) :
 {}
 void Gif::Print() {
 	std::cout
+		<< "Gif:\n"
 		<< "border - " << border << "\n"
 		<< "delay - " << delay << "\n"
 		<< "scale - " << scale << "\n";
