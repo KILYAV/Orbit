@@ -28,11 +28,16 @@ struct Celestial {
 	void Print();
 };
 struct Orbit {
-	float radius{ std::numeric_limits<float>::quiet_NaN() };
-	float apocenter{ std::numeric_limits<float>::quiet_NaN() };
-	float pericenter{ std::numeric_limits<float>::quiet_NaN() };
+	double focal{ qDNAN };
+	double major{ qDNAN };
+	double minor{ qDNAN };
+	double radius{ qDNAN };
+	double apocenter{ qDNAN };
+	double perecenter{ qDNAN };
+	double eccentricity{ qDNAN };
 	Orbit() = default;
 	Orbit(const Orbit&) = default;
 	Orbit(const std::vector<std::string>& words, int& index);
+	std::vector<BitMap> GetBitMaps(const Gif& gif); 
 };
 const std::tuple<Gif, Celestial, Orbit> Parser(int argc, char** argv);

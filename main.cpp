@@ -6,5 +6,4 @@ int main(int argc, char** argv) {
 	gif.Print();
 	celestial.Print();
 	auto bitmap{ celestial.GetBitMap(gif) };
-	bitmap.Print();
 }

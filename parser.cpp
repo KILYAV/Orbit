@@ -3,10 +3,10 @@
 void Help(int& index) {
 	std::cout
 		<< "-h help\n"
-		<< "-b border\n"
+		<< "-g gif\n"
+		<< "	-b border\n"
 		<< "-c celestial\n"
 		<< "-d delay\n"
-		<< "-g gif\n"
 		<< "-n name\n"
 		<< "-r radius\n"
 		<< "-s scale\n";
@@ -59,6 +59,8 @@ const std::tuple<Gif, Celestial, Orbit> Parser(int argc, char** argv) {
 			gif = Gif{ words, index };
 		else if ("-c" == key)
 			celestial = Celestial{ words, index };
+		else if ("-o" == key)
+			orbit = Orbit{ words, index };
 		else {
 			std::cout << "unknow key = " << key << "\n";
 			break;
